@@ -1,0 +1,32 @@
+[build]
+# 使用并行编译
+jobs = 4
+
+[target.x86_64-pc-windows-msvc]
+# Windows 特定优化
+linker = "lld"
+rustflags = [
+    "-C", "target-cpu=native",
+    "-C", "opt-level=3",
+    "-C", "codegen-units=1",
+    "-C", "lto=true",
+]
+
+[profile.release]
+# 发布优化
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+overflow-checks = false
+incremental = false
+
+[profile.dev]
+# 开发优化
+opt-level = 1
+debug = true
+incremental = true
+
+[profile.test]
+opt-level = 0
+debug = true

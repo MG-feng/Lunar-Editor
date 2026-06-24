@@ -9,79 +9,91 @@ repository = "https://github.com/MG-feng/Lunar-Editor"
 build = "build.rs"
 
 [dependencies]
+# GUI Framework - 统一使用 compatible 版本
 egui = "0.27.2"
 egui-wgpu = "0.27.2"
 egui-winit = "0.27.2"
 egui_extras = { version = "0.27.2", features = ["image", "svg"] }
-winit = "0.30.5"
+winit = "0.29.15"
 
+# Rendering
 wgpu = "0.19.4"
-wgpu-hal = "0.19.4"
 bytemuck = { version = "1.14.3", features = ["derive"] }
 pollster = "0.3.0"
 glam = { version = "0.25.0", features = ["serde", "bytemuck"] }
 
+# Text Editing
 ropey = "1.6.1"
 tree-sitter = "0.22.6"
 
+# Plugin System
 wasmtime = { version = "18.0.1", features = ["cranelift", "parallel-compilation", "cache"] }
 wasmtime-wasi = "18.0.1"
 
+# Serialization
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
 toml = "0.8.12"
 rmp-serde = "1.1.2"
 
+# File System
 walkdir = "2.5.0"
 notify = "6.1.1"
 tempfile = "3.10.0"
 
+# Math
 nalgebra = { version = "0.32.5", features = ["serde-serialize"] }
 
+# Image Processing
 image = { version = "0.24.9", features = ["png", "jpeg", "webp", "bmp", "tiff"] }
 
+# 3D Model Loading
 gltf = { version = "1.4.0", features = ["utils", "extensions", "names"] }
 
+# Fonts
 fontdue = "0.7.3"
 
+# Async Runtime
 tokio = { version = "1.36.0", features = ["full"] }
 futures = "0.3.30"
 
+# Error Handling
 anyhow = "1.0.80"
 thiserror = "1.0.57"
 
+# Logging
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
 tracing-appender = "0.2.3"
 
+# Concurrency
 parking_lot = "0.12.1"
 dashmap = "5.5.3"
 crossbeam-channel = "0.5.11"
 
+# Utilities
 slotmap = "1.0.7"
 bitflags = "2.4.2"
 smallvec = "1.13.1"
 arc-swap = "1.6.0"
 once_cell = "1.19.0"
 
+# Color
 palette = { version = "0.7.5", features = ["serde"] }
 
+# UUID
 uuid = { version = "1.7.0", features = ["v4", "serde"] }
 chrono = "0.4.35"
 
 crossterm = "0.27.0"
-
 flate2 = "1.0.28"
 zstd = "0.13.0"
-
 blake3 = "1.5.0"
 
 sys-info = "0.9.1"
 num_cpus = "1.16.0"
-
 rand = "0.8.5"
 rand_chacha = "0.3.1"
-
 arboard = "3.3.0"
 
 [dev-dependencies]
@@ -97,7 +109,6 @@ codegen-units = 1
 strip = true
 panic = "abort"
 opt-level = 3
-overflow-checks = false
 
 [profile.dev]
 opt-level = 1

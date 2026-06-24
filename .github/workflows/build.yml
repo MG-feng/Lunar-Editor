@@ -8,11 +8,13 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse # 加速依赖下载
 
 jobs:
   build:
     name: Build Windows
     runs-on: windows-latest
+    timeout-minutes: 20 # 超时限制
 
     steps:
       - name: Checkout code
@@ -25,27 +27,76 @@ jobs:
           target: x86_64-pc-windows-msvc
           override: true
           profile: minimal
+          components: rustfmt, clippy # 可选，但可以提前安装
 
+      # 使用更高效的缓存策略
       - name: Cache cargo registry
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
             target
-          key: windows-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            windows-cargo-
+            ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            ${{ runner.os }}-cargo-
 
+      # 使用 sccache 加速编译
+      - name: Install sccache
+        run: |
+          curl -L https://github.com/mozilla/sccache/releases/download/v0.8.2/sccache-v0.8.2-x86_64-pc-windows-msvc.tar.gz -o sccache.tar.gz
+          tar -xzf sccache.tar.gz
+          echo "${{ github.workspace }}/sccache-v0.8.2-x86_64-pc-windows-msvc" >> $env:GITHUB_PATH
+
+      - name: Configure sccache
+        run: |
+          echo "SCCACHE_DIR=${{ runner.temp }}/sccache" >> $env:GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $env:GITHUB_ENV
+          mkdir -p ${{ runner.temp }}/sccache
+
+      # 缓存 sccache
+      - name: Cache sccache
+        uses: actions/cache@v3
+        with:
+          path: ${{ runner.temp }}/sccache
+          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-
+
+      # 优化依赖 - 只下载必要的依赖
+      - name: Download dependencies only
+        uses: actions-rs/cargo@v1
+        with:
+          command: fetch
+          args: --target x86_64-pc-windows-msvc
+
+      # 构建 Release
       - name: Build Release
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --target x86_64-pc-windows-msvc
+          args: --release --target x86_64-pc-windows-msvc --verbose
+        env:
+          CARGO_INCREMENTAL: 0 # 禁用增量编译以节省空间
 
+      # 获取 sccache 统计
+      - name: Show sccache stats
+        run: sccache --show-stats
+
+      # 准备产物
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+          copy target\x86_64-pc-windows-msvc\release\lunar-editor.exe artifacts\
+          copy target\x86_64-pc-windows-msvc\release\lunar-editor.pdb artifacts\ 2>nul || echo "No PDB file"
+
+      # 上传产物
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: lunar-editor-windows
-          path: target/x86_64-pc-windows-msvc/release/lunar-editor.exe
+          path: artifacts/
           retention-days: 30
+          compression-level: 9
