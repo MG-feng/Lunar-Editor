@@ -9,15 +9,16 @@ repository = "https://github.com/MG-feng/Lunar-Editor"
 build = "build.rs"
 
 [dependencies]
-# GUI Framework - 统一使用 compatible 版本
+# GUI Framework - 统一使用 winit 0.29
 egui = "0.27.2"
 egui-wgpu = "0.27.2"
 egui-winit = "0.27.2"
 egui_extras = { version = "0.27.2", features = ["image", "svg"] }
-winit = "0.29.15"
+winit = "0.29.15"  # 固定版本，与 egui-winit 匹配
 
 # Rendering
 wgpu = "0.19.4"
+wgpu-hal = "0.19.4"
 bytemuck = { version = "1.14.3", features = ["derive"] }
 pollster = "0.3.0"
 glam = { version = "0.25.0", features = ["serde", "bytemuck"] }
