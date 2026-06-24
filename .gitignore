@@ -1,0 +1,67 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+*.exp
+*.lib
+*.dll
+*.so
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.iml
+
+# Build artifacts
+build/
+dist/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project specific
+project/*/
+!project/.gitkeep
+plugins/*/
+!plugins/.gitkeep
+*.tmp
+*.cache
+
+# Profile
+profile/
+*.prof
+
+# Dependencies
+Cargo.lock
+
+# Test outputs
+test-output/
+
+# Coverage
+*.gcda
+*.gcno
+*.gcov
+target/coverage/
+
+# Documentation
+target/doc/
+
+# Lua/Lunar cache
+*.luac
+*.lunar_cache
+
+# Temp files
+*.tmp
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local

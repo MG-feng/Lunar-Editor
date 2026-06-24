@@ -1,0 +1,74 @@
+name: Build Lunar Editor
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch: # 允许在GitHub网页上手动点击运行
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: lunar-editor.exe
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: lunar-editor
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact: lunar-editor
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+          profile: minimal
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev \
+            libx11-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libwayland-dev libxkbcommon-dev \
+            libdbus-1-dev libgtk-3-dev
+
+      - name: Build Release
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/${{ matrix.artifact }}
+          retention-days: 30
